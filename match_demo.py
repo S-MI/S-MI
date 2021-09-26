@@ -8,7 +8,7 @@ import sys
 import numpy as np
 import math
 
-frame = cv2.VideoCapture(1)
+frame = cv2.VideoCapture(0)
 at_detector = apriltag.Detector(apriltag.DetectorOptions(families='tag36h11'))  # 创建一个apriltag检测器
 
 
@@ -134,16 +134,16 @@ class MatchDemo:
     def default_platform(self):
         self.controller.up.CDS_SetAngle(5, 650, self.servo_speed)
         self.controller.up.CDS_SetAngle(6, 650, self.servo_speed)
-        self.controller.up.CDS_SetAngle(7, 300, self.servo_speed)
+        self.controller.up.CDS_SetAngle(7, 330, self.servo_speed)
         self.controller.up.CDS_SetAngle(8, 300, self.servo_speed)
 
     # 放下前爪
     def pack_up_ahead(self):
         self.controller.up.CDS_SetAngle(5, 300, self.servo_speed)
-        self.controller.up.CDS_SetAngle(7, 650, self.servo_speed)
+        self.controller.up.CDS_SetAngle(7, 680, self.servo_speed)
         time.sleep(0.01)
         self.controller.up.CDS_SetAngle(5, 300, self.servo_speed)
-        self.controller.up.CDS_SetAngle(7, 650, self.servo_speed)
+        self.controller.up.CDS_SetAngle(7, 680, self.servo_speed)
 
     # 放下后爪
     def pack_up_behind(self):
@@ -158,7 +158,7 @@ class MatchDemo:
     def shovel_state(self):
         self.controller.up.CDS_SetAngle(5, 300, self.servo_speed)
         self.controller.up.CDS_SetAngle(6, 300, self.servo_speed)
-        self.controller.up.CDS_SetAngle(7, 650, self.servo_speed)
+        self.controller.up.CDS_SetAngle(7, 680, self.servo_speed)
         self.controller.up.CDS_SetAngle(8, 650, self.servo_speed)
 
     # 前上台动作
@@ -242,21 +242,21 @@ class MatchDemo:
         left_behind_io = 1 if self.controller.io_data[3] == 0 else 0
         sum_down = ahead_ad + right_ad + behind_ad + left_ad
         sum_up = left_ahead_io + left_behind_io + right_ahead_io + right_behind_io
-        if angle_sensor > 1500 and angle_sensor < 2100:
-            if sum_down >= 1 and sum_up <= 2:
-                # 在台下
-                return 0
-            elif sum_down == 0 and sum_up == 0:
-                return 5
-            else:
-                # 在台上
-                return 1
-        elif angle_sensor <= 1500:
-            # 卡在擂台左侧在地面右侧在擂台
-            return 3
+        # if angle_sensor > 1500 and angle_sensor < 2100:
+        if sum_down >= 1 and sum_up <= 2:
+            # 在台下
+            return 0
+        elif sum_down == 0 and sum_up == 0:
+            return 5
         else:
-            # 卡在擂台右侧在地面左侧在擂台
-            return 4
+            # 在台上
+            return 1
+        # elif angle_sensor <= 1500:
+        #     # 卡在擂台左侧在地面右侧在擂台
+        #     return 3
+        # else:
+        #     # 卡在擂台右侧在地面左侧在擂台
+        #     return 4
 
     def fence_detect(self):
         # 底部前方红外光电
@@ -467,13 +467,15 @@ class MatchDemo:
                 print("fence",fence)
                 # 在台下后方对擂台
                 if fence == 1:
+                    self.controller.move_cmd(800,800)
+                    time.sleep(0.3)
                     print("fence",fence,"在台下后方对擂台")
                     self.go_up_behind_platform()    #后上台
                 
                 # 左侧对擂台
                 if fence == 2:
                     print("fence",fence,"在台下左侧对擂台")
-                    self.controller.move_cmd(0, 0)
+                    self.controller.move_cmd(800, -800)
                     time.sleep(0.2)
                     t = time.time()
                     while 1:
@@ -499,7 +501,7 @@ class MatchDemo:
                 # 右侧对擂台
                 if fence == 4:
                     print("fence",fence,"在台下右侧对擂台")
-                    self.controller.move_cmd(0, 0)
+                    self.controller.move_cmd(-800, 800)
                     time.sleep(0.2)
                     t = time.time()
                     while 1:
@@ -671,21 +673,25 @@ class MatchDemo:
                     if enemy == 0:      #无敌人无箱子，缓速前进
                         print("enemy",enemy,"无敌人无箱子")
                         self.controller.move_cmd(600, 600)
-                        time.sleep(0.01)
+                        # time.sleep(0.01)
                     # 前有qizi
                     if enemy == 1:      #前方敌人，加速前进
-                        # id = self.apriltag_detect_thread(img)
-                        # if (id == 1 or id == 0):
-                        print("enemy",enemy,"前方有敌人")
-                        self.controller.move_cmd(900, 900)
-                        # else :
-                        #     self.controller.move_cmd(-600,-600)
-                        #     time.sleep(0.5)
-                        #     self.controller.move_cmd(800,-800)
-                        #     time.sleep(1)
-                        #     self.controller.move_cmd(600,600)
-                        #     time.sleep()
-                        #self.pack_up_ahead()
+                        id = self.apriltag_detect_thread(img)
+                        print("id =", id)
+                        if (id != 1):
+                            print("enemy",enemy,"前方有敌人")
+                            self.controller.move_cmd(600, 600)
+                            time.sleep(0.3)
+                            self.pack_up_ahead()
+                            time.sleep(0.5)
+                        else :
+                            self.controller.move_cmd(-600,-600)
+                            time.sleep(0.5)
+                            self.controller.move_cmd(800,-800)
+                            time.sleep(1)
+                            self.controller.move_cmd(600,600)
+                            time.sleep(1)
+                        self.pack_up_ahead()
                         # time.sleep(0.001)
                     # 右侧有敌人
                     if enemy == 2:      #右侧有敌人，先退后(此处的退后目的是刹车，因为执行时间只有0.1s)再原地右转
@@ -749,8 +755,24 @@ class MatchDemo:
                     # 前方检测到箱子
                     if enemy == 11:     #加速前进
                         print("enemy",enemy,"前方箱子")
-                        self.controller.move_cmd(1000, 1000)
-                        time.sleep(0.02)
+                        id = self.apriltag_detect_thread(img)
+                        print("id =", id)
+                        if (id != 1):
+                            print("enemy",enemy,"前方有敌人")
+                            self.controller.move_cmd(600, 600)
+                            time.sleep(0.3)
+                            self.pack_up_ahead()
+                            time.sleep(0.5)
+                        else :
+                            self.controller.move_cmd(-600,-600)
+                            time.sleep(0.5)
+                            self.controller.move_cmd(800,-800)
+                            time.sleep(1)
+                            self.controller.move_cmd(600,600)
+                            time.sleep(1)
+                        self.pack_up_ahead()
+                        # time.sleep(0.001)
+                        
                 # 左前检测到边缘
                 if edge == 1:       #后退，右转
                     print("edge",edge,"左前检测到边缘")
@@ -774,7 +796,7 @@ class MatchDemo:
                     self.controller.move_cmd(-800, 800)
                     self.pack_up_ahead()
                     self.pack_up_behind()
-                    time.sleep(1)
+                    time.sleep(0.5)
                 # 右后检测到边缘
                 if edge == 3:       #前进，右转
                     print("edge",edge,"右后检测到边缘")
@@ -785,10 +807,11 @@ class MatchDemo:
                     self.controller.move_cmd(800, -800)
                     self.pack_up_ahead()
                     self.pack_up_behind()
-                    time.sleep(1)
+                    time.sleep(0.5)
                 # 左后检测到边缘
                 if edge == 4:       #前进，左转
                     print("edge",edge,"左后检测到边缘")
+                    self.default_platform()
                     self.controller.move_cmd(600, 600)
                     time.sleep(1)
                     self.controller.move_cmd(0,0)
@@ -796,7 +819,7 @@ class MatchDemo:
                     self.controller.move_cmd(-800, 800)
                     self.pack_up_ahead()
                     self.pack_up_behind()
-                    time.sleep(1)
+                    time.sleep(0.5)
                 # 前方两个检测到边缘
                 if edge == 5:       #后退，右转
                     print("edge",edge,"前方检测到边缘")
@@ -808,15 +831,17 @@ class MatchDemo:
                     self.controller.move_cmd(800, -800)
                     self.pack_up_ahead()
                     self.pack_up_behind()
-                    time.sleep(1)
+                    time.sleep(0.5)
                 # 后方两个检测到边缘
                 if edge == 6:       #前进
                     print("edge",edge,"后方检测到边缘")
+                    self.default_platform()
                     self.controller.move_cmd(700, 700)
                     time.sleep(1)
                 # 左侧两个检测到边缘
                 if edge == 7:       #右转，前进
                     print("edge",edge,"左侧检测到边缘")
+                    self.default_platform()
                     self.controller.move_cmd(800, -800)
                     time.sleep(0.5)
                     self.controller.move_cmd(600,600)
@@ -824,6 +849,7 @@ class MatchDemo:
                 # 右侧两个检测到边缘
                 if edge == 8:
                     self.controller.move_cmd(-800, 800)
+                    self.default_platform()
                     time.sleep(0.5)
                     self.controller.move_cmd(600, 600)
                     time.sleep(0.3)
