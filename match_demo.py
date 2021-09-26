@@ -6,11 +6,15 @@ import cv2
 import apriltag
 import sys
 import numpy as np
+import math
 
-
+frame = cv2.VideoCapture(1)
+at_detector = apriltag.Detector(apriltag.DetectorOptions(families='tag36h11'))  # 创建一个apriltag检测器
 
 
 class MatchDemo:
+
+    
 
     FD = 150
     RD = 150
@@ -50,36 +54,81 @@ class MatchDemo:
         # apriltag_detect.start()
         
 
-    def apriltag_detect_thread(self):
-        print("detect start")
-        cap = cv2.VideoCapture(2)
+    def apriltag_detect_thread(self,img):
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        tags = at_detector.detect(gray)  # 进行apriltag检测，得到检测到的apriltag的列表
+        # print("%d apriltags have been detected."%len(tags))
+        # if len(tags) == 0:
+            # ser.write("4".encode("gb18030"))
+        key_longest_side = [-1, -1, -1]
 
-        w = 640
-        h = 480
-        weight = 320
-        cap.set(3,w)
-        cap.set(4,h)
+        for tag in tags:
+            x0, y0 = tuple(tag.corners[0].astype(int))
+            x1, y1 = tuple(tag.corners[1].astype(int))
+            x2, y2 = tuple(tag.corners[2].astype(int))
+            x3, y3 = tuple(tag.corners[3].astype(int))
 
-        cup_w = (int)((w - weight) / 2)
-        cup_h = (int)((h - weight) / 2) + 50
+            d_up = math.sqrt(math.pow((x1 - x0), 2) + math.pow((y1 - y0), 2))
+            d_down = math.sqrt(math.pow((x3 - x2), 2) + math.pow((y3 - y2), 2))
+            d_left = math.sqrt(math.pow((x3 - x0), 2) + math.pow((y3 - y0), 2))
+            d_right = math.sqrt(math.pow((x2 - x1), 2) + math.pow((y2 - y1), 2))
+            if (tag.tag_id) < 3 :
+                if d_up >= d_down and d_up >= d_left and d_up >= d_right :  #get_longest_side
+                    key_longest_side[tag.tag_id] = d_up
+                elif d_down >= d_up and d_down >= d_left and d_down >= d_right :
+                    key_longest_side[tag.tag_id] = d_down
+                elif d_left >= d_up and d_left >= d_down and d_left >= d_right :
+                    key_longest_side[tag.tag_id] = d_left
+                elif d_right >= d_up and d_right >= d_down and d_right >= d_left :
+                    key_longest_side[tag.tag_id] = d_right
+            else :
+                print("The id not in list!")
 
-        while True:
-            ret, frame = cap.read()
-            #frame = frame[cup_h:cup_h + weight,cup_w:cup_w + weight]
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            tags = self.at_detector.detect(gray)
-            for tag in tags:
-                self.tag_id = tag.tag_id
-                print("tag_id = {}".format(tag.tag_id))
-                cv2.circle(frame, tuple(tag.corners[0].astype(int)), 4, (255, 0, 0), 2) # left-top
-                cv2.circle(frame, tuple(tag.corners[1].astype(int)), 4, (255, 0, 0), 2) # right-top
-                cv2.circle(frame, tuple(tag.corners[2].astype(int)), 4, (255, 0, 0), 2) # right-bottom
-                cv2.circle(frame, tuple(tag.corners[3].astype(int)), 4, (255, 0, 0), 2) # left-bottom
-            cv2.imshow("img", frame)
-            if cv2.waitKey(100) & 0xff == ord('q'):
-               break
-        cap.release()
-        cv2.destroyAllWindows()
+        key_index = -1 #save_longest_side_side
+        if key_longest_side[0] >= key_longest_side[1] and key_longest_side[0] >= key_longest_side[2]:
+            key_index = 0
+        elif key_longest_side[1] >= key_longest_side[0] and key_longest_side[1] >= key_longest_side[2]:
+            key_index = 1
+        elif key_longest_side[2] >= key_longest_side[0] and key_longest_side[2] >= key_longest_side[1]:
+            key_index = 2
+        print(key_longest_side)
+        for tag in tags:
+            if tag.tag_id == key_index:
+                cv2.circle(img, tuple(tag.corners[0].astype(int)), 4, (255, 0, 0), 2)  # left-top
+                cv2.circle(img, tuple(tag.corners[1].astype(int)), 4, (255, 0, 0), 2)  # right-top
+                cv2.circle(img, tuple(tag.corners[2].astype(int)), 4, (255, 0, 0), 2)  # right-bottom
+                cv2.circle(img, tuple(tag.corners[3].astype(int)), 4, (255, 0, 0), 2)  # left-bottom
+                print(tag.tag_id)
+                return tag.tag_id
+        # print("detect start")
+        # cap = cv2.VideoCapture(2)
+
+        # w = 640
+        # h = 480
+        # weight = 320
+        # cap.set(3,w)
+        # cap.set(4,h)
+
+        # cup_w = (int)((w - weight) / 2)
+        # cup_h = (int)((h - weight) / 2) + 50
+
+        # while True:
+        #     ret, frame = cap.read()
+        #     #frame = frame[cup_h:cup_h + weight,cup_w:cup_w + weight]
+        #     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #     tags = self.at_detector.detect(gray)
+        #     for tag in tags:
+        #         self.tag_id = tag.tag_id
+        #         print("tag_id = {}".format(tag.tag_id))
+        #         cv2.circle(frame, tuple(tag.corners[0].astype(int)), 4, (255, 0, 0), 2) # left-top
+        #         cv2.circle(frame, tuple(tag.corners[1].astype(int)), 4, (255, 0, 0), 2) # right-top
+        #         cv2.circle(frame, tuple(tag.corners[2].astype(int)), 4, (255, 0, 0), 2) # right-bottom
+        #         cv2.circle(frame, tuple(tag.corners[3].astype(int)), 4, (255, 0, 0), 2) # left-bottom
+        #     cv2.imshow("img", frame)
+        #     if cv2.waitKey(100) & 0xff == ord('q'):
+        #        break
+        # cap.release()
+        # cv2.destroyAllWindows()
 
     # 默认上台动作
     def default_platform(self):
@@ -120,7 +169,7 @@ class MatchDemo:
         self.default_platform()
         time.sleep(0.4)
         self.controller.move_cmd(800, 800)
-        time.sleep(0.5)
+        time.sleep(1)
         # 支前爪
         self.controller.move_cmd(0, 0)
         self.pack_up_ahead()
@@ -154,7 +203,7 @@ class MatchDemo:
         self.default_platform()
         time.sleep(0.4)
         self.controller.move_cmd(-800, -800)
-        time.sleep(0.5)
+        time.sleep(1)
         # 支前爪
         self.controller.move_cmd(0,0)
         self.pack_up_behind()
@@ -293,6 +342,18 @@ class MatchDemo:
         if ad3 < 1000 and ad4 < 1000 and ad7 < self.FD and ad8 < self.LD:
             # 在台下，后方和左侧对擂台其他传感器没检测到
             return 18
+        if ad1 > 1000 and ad2 > 1000 and ad3 < 1000 and ad4 > 1000:
+            return 19
+        if ad1 < 1000 and ad2 > 1000 and ad3 > 1000 and ad4 > 1000:
+            return 20
+        # 底部前方红外光电
+        # ad1 = self.controller.adc_data[5]
+        # 底部右侧红外光电
+        # ad2 = self.controller.adc_data[6]
+        # 底部后方红外光电
+        # ad3 = self.controller.adc_data[7]
+        # 底部左侧红外光电
+        # ad4 = self.controller.adc_data[8]
         else:
             return 101
 
@@ -395,6 +456,7 @@ class MatchDemo:
         time.sleep(1)
         #self.go_up_ahead_platform()    #前上台
         while 1:
+            ret,img = frame.read()
             stage = self.paltform_detect()    #检测是否在台上
             time.sleep(0.01)
             # 在台下
@@ -430,6 +492,8 @@ class MatchDemo:
                 # 前方对擂台
                 if fence == 3:
                     print("fence",fence,"在台下前方对擂台")
+                    self.controller.move_cmd(-600,-600)
+                    time.sleep(0.3)
                     self.go_up_ahead_platform()
                 
                 # 右侧对擂台
@@ -514,39 +578,39 @@ class MatchDemo:
                 if fence == 15:     #与‘右侧对擂台’处理过程相同
                     print("fence",fence,"在台下，前右检测到擂台")
                     self.controller.move_cmd(-600, -600)
-                    time.sleep(0.3)
+                    time.sleep(0.5)
                     self.controller.move_cmd(600, 600)
-                    time.sleep(0.3)
+                    time.sleep(0.5)
                     while 1:
                         ad1 = self.controller.adc_data[5]
                         ad4 = self.controller.adc_data[8]
                         ad6 = self.controller.adc_data[2]
                         if ad1 < 1000 and ad6 < 160 and ad4 > 1000:
                             #time.sleep(0.2)
-                            self.controller.move_cmd(600, -600)
+                            self.controller.move_cmd(600, 600)
                             time.sleep(0.3)
                             break
                         else:
-                            self.controller.move_cmd(800, 0)
+                            self.controller.move_cmd(1000, 0)
                             time.sleep(0.5)
                 #  前左检测到擂台
                 if fence == 16:     #与‘左侧对擂台’处理过程相同
                     print("fence",fence,"在台下，前左检测到擂台")
                     self.controller.move_cmd(-600, -600)
-                    time.sleep(0.3)
+                    time.sleep(0.5)
                     self.controller.move_cmd(600, 600)
-                    time.sleep(0.3)
+                    time.sleep(0.5)
                     while 1:
                         ad1 = self.controller.adc_data[5]
                         ad4 = self.controller.adc_data[8]
                         ad6 = self.controller.adc_data[2]
                         if ad1 < 1000 and ad6 < 160 and ad4 > 1000:
                             # time.sleep(0.2)
-                            self.controller.move_cmd(-600, 600)
+                            self.controller.move_cmd(600, 600)
                             time.sleep(0.3)
                             break
                         else:
-                            self.controller.move_cmd(0, 800)
+                            self.controller.move_cmd(0, 1000)
                             time.sleep(0.5)
                 # 在台下，后方和右侧对擂台其他传感器没检测到
                 if fence == 17:         #不知处于什么状态，但解决方法与‘右侧对擂台’相似（自转速度不同）
@@ -582,6 +646,15 @@ class MatchDemo:
                         else:
                             self.controller.move_cmd(-620, 550)
                             time.sleep(0.002)
+                if fence == 19:
+                    print("前高后低卡在擂台")
+                    self.controller.move_cmd(1000,1000)
+                    self.pack_up_behind()
+                if fence == 20:
+                    print("后高前低卡在擂台")
+                    self.controller.move_cmd(-1000,-1000)
+                    self.pack_up_ahead()
+
             #在擂台上
             if stage == 1:
                 print("stage",stage,"在台上")
@@ -590,6 +663,8 @@ class MatchDemo:
                 edge = self.edge_detect()
                 if edge == 0:
                     print("edge",edge,"未检测到边缘")
+                    self.pack_up_ahead()
+                    self.pack_up_behind()
                     enemy = self.enemy_detect()
                     print("enemy",enemy)
                     # 无敌人
@@ -599,10 +674,19 @@ class MatchDemo:
                         time.sleep(0.01)
                     # 前有qizi
                     if enemy == 1:      #前方敌人，加速前进
+                        # id = self.apriltag_detect_thread(img)
+                        # if (id == 1 or id == 0):
                         print("enemy",enemy,"前方有敌人")
                         self.controller.move_cmd(900, 900)
-                        self.pack_up_ahead()
-                        time.sleep(0.001)
+                        # else :
+                        #     self.controller.move_cmd(-600,-600)
+                        #     time.sleep(0.5)
+                        #     self.controller.move_cmd(800,-800)
+                        #     time.sleep(1)
+                        #     self.controller.move_cmd(600,600)
+                        #     time.sleep()
+                        #self.pack_up_ahead()
+                        # time.sleep(0.001)
                     # 右侧有敌人
                     if enemy == 2:      #右侧有敌人，先退后(此处的退后目的是刹车，因为执行时间只有0.1s)再原地右转
                         print("enemy",enemy,"右侧有敌人")
@@ -676,6 +760,8 @@ class MatchDemo:
                     self.controller.move_cmd(0,0)
                     time.sleep(0.3)
                     self.controller.move_cmd(800, -800)
+                    self.pack_up_ahead()
+                    self.pack_up_behind()
                     time.sleep(1)
                 # 右前检测到边缘
                 if edge == 2:       #后退，左转
@@ -686,6 +772,8 @@ class MatchDemo:
                     self.controller.move_cmd(0,0)
                     time.sleep(0.3)
                     self.controller.move_cmd(-800, 800)
+                    self.pack_up_ahead()
+                    self.pack_up_behind()
                     time.sleep(1)
                 # 右后检测到边缘
                 if edge == 3:       #前进，右转
@@ -695,6 +783,8 @@ class MatchDemo:
                     self.controller.move_cmd(0,0)
                     time.sleep(0.3)
                     self.controller.move_cmd(800, -800)
+                    self.pack_up_ahead()
+                    self.pack_up_behind()
                     time.sleep(1)
                 # 左后检测到边缘
                 if edge == 4:       #前进，左转
@@ -704,6 +794,8 @@ class MatchDemo:
                     self.controller.move_cmd(0,0)
                     time.sleep(0.3)
                     self.controller.move_cmd(-800, 800)
+                    self.pack_up_ahead()
+                    self.pack_up_behind()
                     time.sleep(1)
                 # 前方两个检测到边缘
                 if edge == 5:       #后退，右转
@@ -714,6 +806,8 @@ class MatchDemo:
                     self.controller.move_cmd(0,0)
                     time.sleep(0.3)
                     self.controller.move_cmd(800, -800)
+                    self.pack_up_ahead()
+                    self.pack_up_behind()
                     time.sleep(1)
                 # 后方两个检测到边缘
                 if edge == 6:       #前进
@@ -724,8 +818,9 @@ class MatchDemo:
                 if edge == 7:       #右转，前进
                     print("edge",edge,"左侧检测到边缘")
                     self.controller.move_cmd(800, -800)
-                    time.sleep(1)
+                    time.sleep(0.5)
                     self.controller.move_cmd(600,600)
+                    time.sleep(0.3)
                 # 右侧两个检测到边缘
                 if edge == 8:
                     self.controller.move_cmd(-800, 800)
@@ -776,6 +871,7 @@ class MatchDemo:
                     time.sleep(0.01)
             # 搁浅左侧在擂台右侧在地面
             if stage == 3:
+                print("左高右低")
                 self.na += 1
                 if self.na == 350:
                     self.controller.move_cmd(-800, 800)
@@ -789,6 +885,7 @@ class MatchDemo:
                     time.sleep(0.001)
             # 搁浅右侧在擂台左侧在地面
             if stage == 4:
+                print("右高左低")
                 self.na += 1
                 if self.na == 350:
                     self.controller.move_cmd(800, -800)
@@ -805,7 +902,9 @@ class MatchDemo:
                 print("已浮空")
                 self.pack_up_ahead()
                 self.pack_up_behind()
-                self.controller.move_cmd(600,-600)
+                self.controller.move_cmd(-800,-800)
+                time.sleep(0.5)
+                self.controller.move_cmd(800,-800)
                 time.sleep(0.5)
                 self.default_platform()
 
