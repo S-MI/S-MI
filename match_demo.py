@@ -464,14 +464,14 @@ class MatchDemo:
 
     def start_match(self):
         self.default_platform()    #收起四个铲子
-        time.sleep(1)
-        ad4 = self.controller.adc_data[8]
-        while(ad4 >= 100):
-            ad4 = self.controller.adc_data[8]
-        self.go_up_ahead_platform()    #前上台
+        # time.sleep(1)
+        # ad4 = self.controller.adc_data[4]
+        # while(ad4 >= 100):
+        #     ad4 = self.controller.adc_data[4]
+        # self.go_up_ahead_platform()    #前上台
         # self.go_up_behind_platform()
-        self.controller.move_cmd(600,700)
-        time.sleep(0.5)
+        # self.controller.move_cmd(600,700)
+        # time.sleep(0.5)
         while 1:
             stage = self.paltform_detect()    #检测是否在台上
             ret,img = frame.read()
@@ -696,7 +696,7 @@ class MatchDemo:
                     # 无敌人
                     if enemy == 0:      #无敌人无箱子，缓速前进
                         print("enemy",enemy,"无敌人无箱子")
-                        self.controller.move_cmd(600, 600)
+                        self.controller.move_cmd(700, 700)
                         # time.sleep(0.01)
                     # 前有qizi
                     elif enemy == 1:      #前方敌人，加速前进
@@ -816,7 +816,7 @@ class MatchDemo:
                     self.controller.move_cmd(800, -800)
                     self.pack_up_ahead()
                     self.pack_up_behind()
-                    time.sleep(1)
+                    time.sleep(0.5)
                 # 右前检测到边缘
                 elif edge == 2:       #后退，左转
                     print("edge",edge,"右前检测到边缘")
