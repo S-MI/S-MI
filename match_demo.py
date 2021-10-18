@@ -465,10 +465,10 @@ class MatchDemo:
     def start_match(self):
         self.default_platform()    #收起四个铲子
         time.sleep(1)
-        # ad4 = self.controller.adc_data[8]
-        # while(ad4 >= 100):
-        #     ad4 = self.controller.adc_data[8]
-        # self.go_up_ahead_platform()    #前上台
+        ad4 = self.controller.adc_data[8]
+        while(ad4 >= 100):
+            ad4 = self.controller.adc_data[8]
+        self.go_up_ahead_platform()    #前上台
         # self.go_up_behind_platform()
         self.controller.move_cmd(600,700)
         time.sleep(0.5)
