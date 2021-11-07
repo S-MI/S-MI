@@ -21,17 +21,28 @@ import math
 #                 break
 #     return index
 
-frame = cv2.VideoCapture(1)
+frame = cv2.VideoCapture(-1)
 at_detector = apriltag.Detector(apriltag.DetectorOptions(families='tag36h11'))  # 创建一个apriltag检测器
 
+taggle = 0
 while (1) :
     ret,img = frame.read()
+    img = img[100:]
+    cv2.imshow("test",img)
+    cv2.waitKey(1)
+    # continue
+    
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     tags = at_detector.detect(gray)  # 进行apriltag检测，得到检测到的apriltag的列表
     # print("%d apriltags have been detected."%len(tags))
     # if len(tags) == 0:
         # ser.write("4".encode("gb18030"))
     key_longest_side = [-1, -1, -1]
+    print(taggle)
+    if taggle == 0:
+        taggle = 1 
+    else:
+        taggle = 0
 
     for tag in tags:
         x0, y0 = tuple(tag.corners[0].astype(int))
@@ -63,10 +74,12 @@ while (1) :
     elif key_longest_side[2] >= key_longest_side[0] and key_longest_side[2] >= key_longest_side[1]:
         key_index = 2
     print(key_longest_side)
-    for tag in tags:
-        if tag.tag_id == key_index:
-            cv2.circle(img, tuple(tag.corners[0].astype(int)), 4, (255, 0, 0), 2)  # left-top
-            cv2.circle(img, tuple(tag.corners[1].astype(int)), 4, (255, 0, 0), 2)  # right-top
-            cv2.circle(img, tuple(tag.corners[2].astype(int)), 4, (255, 0, 0), 2)  # right-bottom
-            cv2.circle(img, tuple(tag.corners[3].astype(int)), 4, (255, 0, 0), 2)  # left-bottom
-            print(tag.tag_id)
+    # for tag in tags:
+    #     if tag.tag_id == key_index:
+    #         cv2.circle(img, tuple(tag.corners[0].astype(int)), 4, (255, 0, 0), 2)  # left-top
+    #         cv2.circle(img, tuple(tag.corners[1].astype(int)), 4, (255, 0, 0), 2)  # right-top
+    #         cv2.circle(img, tuple(tag.corners[2].astype(int)), 4, (255, 0, 0), 2)  # right-bottom
+    #         cv2.circle(img, tuple(tag.corners[3].astype(int)), 4, (255, 0, 0), 2)  # left-bottom
+    #         print(tag.tag_id)
+    # cv2.imshow("test",img)
+    # cv2.waitKey(1)

@@ -2,29 +2,48 @@
 # -*- coding: utf-8 -*-
 import uptech
 import time
-import up_controller
+from up_controller import UpController
+from match_demo import MatchDemo
+
+self = MatchDemo()
 
 def stop():
     up.CDS_SetSpeed(1,0)
     up.CDS_SetSpeed(2,0)
 
 def move_up():
-    up.CDS_SetSpeed(1,800)
-    up.CDS_SetSpeed(2,-800)
+    up.CDS_SetSpeed(1,1000)
+    up.CDS_SetSpeed(2,-1000)
+
+def move_up1():
+    up.CDS_SetSpeed(1,600)
+    up.CDS_SetSpeed(2,-600)
 
 def move_up_highspeed():
     up.CDS_SetSpeed(1,1023)
     up.CDS_SetSpeed(2,-1023)
 
 def move_back():
-    up.CDS_SetSpeed(1,-800)
-    up.CDS_SetSpeed(2,800)
+    up.CDS_SetSpeed(1,-1000)
+    up.CDS_SetSpeed(2,1000)
+
+def move_back1():
+    up.CDS_SetSpeed(1,-600)
+    up.CDS_SetSpeed(2,600)
 
 def move_rotation_right():
     up.CDS_SetSpeed(1,1023)
     up.CDS_SetSpeed(2,1023)
+
+def move_rotation_right1():
+    up.CDS_SetSpeed(1,800)
+    up.CDS_SetSpeed(2,800)
     
 def move_rotation_left():
+    up.CDS_SetSpeed(1,-800)
+    up.CDS_SetSpeed(2,-800)
+
+def move_rotation_left1():
     up.CDS_SetSpeed(1,-800)
     up.CDS_SetSpeed(2,-800)
 
@@ -91,12 +110,12 @@ if __name__ == '__main__':
         if key == 's':
             stop()
             time.sleep(0.3)
-            move_back()
+            move_back1()
             #time.sleep(0.1)
         elif key == 'w':
             stop()
             time.sleep(0.3)
-            move_up()
+            move_up1()
             #time.sleep(0.1)
         elif key == 'r':
             stop()
@@ -105,13 +124,13 @@ if __name__ == '__main__':
         elif key == 'a':
             stop()
             time.sleep(0.3)
-            move_rotation_left()
+            move_rotation_left1()
             #time.sleep(2)
             #stop()
         elif key == 'd':
             stop()
             time.sleep(0.3)
-            move_rotation_right()
+            move_rotation_right1()
             #time.sleep(0.1)
         elif key == 'q':
             stop()
@@ -125,18 +144,96 @@ if __name__ == '__main__':
             #time.sleep(0.1)
         elif key == 'z':
             stop()
-            up.CDS_SetAngle(5,650,512)
-            up.CDS_SetAngle(6,650,512)
-            up.CDS_SetAngle(7,300,512)
-            up.CDS_SetAngle(8,300,512)
+            up.CDS_SetAngle(5,680,1000)
+            up.CDS_SetAngle(6,700,1000)
+            up.CDS_SetAngle(7,320,1000)
+            up.CDS_SetAngle(8,270,1000)
             #time.sleep(0.1)
+        elif key == 'x':
+            stop()
+        elif key == 't':        #测试区域
+            # self.controller.move_cmd(0, 0)
+            # time.sleep(0.1)
+            # # 爪子抬起
+            # self.default_platform()
+            # time.sleep(0.4)
+            # self.controller.move_cmd(800, 800)
+            # time.sleep(1)
+            # # 支前爪
+            # self.controller.move_cmd(0, 0)
+            # self.controller.up.CDS_SetAngle(5, 300, self.servo_speed)
+            # self.controller.up.CDS_SetAngle(7, 690, self.servo_speed)
+            # # self.pack_up_ahead()
+            # time.sleep(0.5)
+            # # 收起前爪
+            # self.controller.move_cmd(1023,1023)
+            # time.sleep(0.5)
+            # self.controller.move_cmd(0,0)
+            # time.sleep(0.3)
+            # self.controller.move_cmd(1023,1023)
+            # time.sleep(0.3)
+            # self.controller.up.CDS_SetAngle(5, 680, self.servo_speed)
+            # self.controller.up.CDS_SetAngle(7, 320, self.servo_speed)
+            # # 支后爪
+            # #time.sleep(0.5)
+            # # self.pack_up_behind()
+            # self.controller.up.CDS_SetAngle(6, 320, self.servo_speed)
+            # self.controller.up.CDS_SetAngle(8, 660, self.servo_speed)
+            # time.sleep(0.7)
+            # # 默认上台
+            # self.controller.up.CDS_SetAngle(6, 700, self.servo_speed)
+            # self.controller.up.CDS_SetAngle(8, 270, self.servo_speed)
+            # time.sleep(0.5)
+            # # self.default_platform()
+            # # self.controller.move_cmd(600, 1000)  
+            # # time.sleep(0.5)
+
+
+            self.controller.move_cmd(0, 0)
+            time.sleep(0.1)
+            # 爪子抬起
+            self.default_platform()
+            time.sleep(0.4)
+            self.controller.move_cmd(-800, -800)
+            time.sleep(1)
+            # 支前爪
+            self.controller.move_cmd(0,0)
+            # self.pack_up_behind()
+            self.controller.up.CDS_SetAngle(6, 320, self.servo_speed)
+            self.controller.up.CDS_SetAngle(8, 660, self.servo_speed)
+            time.sleep(0.5)
+            # 收起前爪
+            self.controller.move_cmd(-1023,-1023)
+            time.sleep(0.5)
+            self.controller.move_cmd(0,0)
+            time.sleep(0.3)
+            self.controller.move_cmd(-1023,-1023)
+            time.sleep(0.3)
+            self.controller.up.CDS_SetAngle(6, 700, self.servo_speed)
+            self.controller.up.CDS_SetAngle(8, 270, self.servo_speed)
+            # 支后爪
+            #time.sleep(0.5)
+            # self.pack_up_ahead()
+            self.controller.up.CDS_SetAngle(5, 300, self.servo_speed)
+            self.controller.up.CDS_SetAngle(7, 690, self.servo_speed)
+            time.sleep(1)
+            # 默认上台
+            self.controller.up.CDS_SetAngle(5, 680, self.servo_speed)
+            self.controller.up.CDS_SetAngle(7, 320, self.servo_speed)
+            self.default_platform()
+            #time.sleep(0.5)
+            # self.controller.move_cmd(-800, -800)
+            # time.sleep(0.5)
+
+
+            self.controller.move_cmd(0,0)
         elif key == '1':
-            up.CDS_SetAngle(5,300,512)
-            up.CDS_SetAngle(7,650,512)
+            up.CDS_SetAngle(5,370,512)
+            up.CDS_SetAngle(7,630,512)
             #time.sleep(1)
         elif key == '2':
-            up.CDS_SetAngle(6,300,512)
-            up.CDS_SetAngle(8,650,512)
+            up.CDS_SetAngle(6,395,512)
+            up.CDS_SetAngle(8,585,512)
             #time.sleep(1)
         elif key == '3':
             up.CDS_SetAngle(6,300,512)
@@ -144,8 +241,62 @@ if __name__ == '__main__':
             #time.sleep(1)
         elif key == '4':
             up.CDS_SetAngle(5,300,512)
-            up.CDS_SetAngle(8,650,512)
+            up.CDS_SetAngle(8,668,512)
             #time.sleep(1)
+        elif key == '0':
+            stop()
+            time.sleep(0.1)
+            # 爪子抬起
+            up.CDS_SetAngle(5,650,512)
+            up.CDS_SetAngle(6,650,512)
+            up.CDS_SetAngle(7,330,512)
+            up.CDS_SetAngle(8,300,512)
+            time.sleep(0.4)
+            # self.controller.move_cmd(-800, -800)
+            move_back()
+            time.sleep(1)
+            # 支前爪
+            # self.controller.move_cmd(0,0)
+            # self.pack_up_behind()
+            # time.sleep(0.5)
+            up.CDS_SetSpeed(0,0)
+            up.CDS_SetAngle(6,300,512)
+            up.CDS_SetAngle(8,650,512)
+            time.sleep(0.5)
+            # 收起前爪
+            # self.controller.move_cmd(-1023,-1023)
+            move_back()
+            time.sleep(0.5)
+            # self.controller.move_cmd(0,0)
+            stop()
+            time.sleep(0.3)
+            # self.controller.move_cmd(-1023,-1023)
+            move_back()
+            time.sleep(0.3)
+            # self.controller.up.CDS_SetAngle(6, 650, self.servo_speed)
+            # self.controller.up.CDS_SetAngle(8, 300, self.servo_speed)
+            up.CDS_SetAngle(6,300,512)
+            up.CDS_SetAngle(8,650,512)
+            # 支后爪
+            #time.sleep(0.5)
+            # self.pack_up_ahead()
+            # up.CDS_SetAngle(6,300,512)
+            # up.CDS_SetAngle(8,650,512)
+            up.CDS_SetAngle(5,300,512)
+            up.CDS_SetAngle(7,680,512)
+            time.sleep(1)
+            # 默认上台
+            # self.controller.up.CDS_SetAngle(5,650,self.servo_speed)
+            # self.controller.up.CDS_SetAngle(7,300,self.servo_speed)
+            # self.default_platform()
+            up.CDS_SetAngle(5,650,512)
+            up.CDS_SetAngle(6,650,512)
+            up.CDS_SetAngle(7,330,512)
+            up.CDS_SetAngle(8,300,512)
+            #time.sleep(0.5)
+            # self.controller.move_cmd(0, 0)
+            up.CDS_SetSpeed(0,0)
+            #time.sleep(0.5)
                 
         
         #io_all_input = up.ADC_IO_GetAllInputLevel()    #get the decimal value corresponding to all io ports.   such as: 11111111->255  11111110->254 ...  

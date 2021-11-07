@@ -29,7 +29,7 @@ class ApriltagDetect:
             # self.apriltag_width = abs(tag.corners[0][0] - tag.corners[1][0]) / 2 + tag.corners[0][0] + self.apriltag_width
     
     def start_detect(args):
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(-1)
         cap.set(3,640)
         cap.set(4,480)
         ad = ApriltagDetect()
